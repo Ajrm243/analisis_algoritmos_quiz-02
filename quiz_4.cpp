@@ -22,6 +22,11 @@ typedef struct costDirection {
 costDirection costList[1000];
 
 int cD_comparator(const void *v1, const void *v2) {
+    /*
+        * Comparador para la función qsort
+        * https://www.geeksforgeeks.org/comparator-function-of-qsort-in-c/
+        * La idea es sortear los costos más caros al inicio del arreglo
+    */
     const costDirection *p1 = (costDirection *)v1;
     const costDirection *p2 = (costDirection *)v2;
     /*
@@ -56,50 +61,53 @@ int costo(int N, int M, int x[], int y[]) {
     // en 2 cortes de igual costo se prioriza el corte que esté asociado al array más largo de los 2 de entrada
     // de esta manera se hace la minimización de costos
     // mantienen el tamaño de los arreglos x e y
-    int x_size = M - 1, y_size = N - 1;
+    int x_size = M - 1, y_size = N - 1; // +4 tiempos
     // cuentan cuantas sub-divisiones existen
-    int Cx = 1, Cy = 1;
+    int Cx = 1, Cy = 1; // +2 tiempos
     // tiene track del tamaño de la lista a manejar
-    int sizeCounter = 0;
+    int sizeCounter = 0;    // +1
     // track del costo
-    int cost = 0;
+    int cost = 0;   // +1
     // llena el arreglo
-    for (int i = 0; i < x_size; i++) {
-        costList[i] = {x[i], x_size, "x"};
-        sizeCounter++;
-    }
+    // +1
+    for (int i = 0; i < x_size; i++) {  // +3
+        costList[i] = {x[i], x_size, "x"};  // +3
+        sizeCounter++;  // +2
+    }   // (M-1)*8
     // llena el arreglo
-    for (int i = sizeCounter; i < y_size + x_size; i++) {
-        costList[i] = {y[i-x_size], y_size, "y"};
-        sizeCounter++;
-    }
+    // +1
+    for (int i = sizeCounter; i < y_size + x_size; i++) {   // +4
+        costList[i] = {y[i-x_size], y_size, "y"};   // +4
+        sizeCounter++;  // +2
+    }   // (N-1)*10
     // sortea para hacer los calculos usando la función de comparación definida arriba
-    qsort(&costList[0], sizeCounter, sizeof(costDirection), cD_comparator);
+    qsort(&costList[0], sizeCounter, sizeof(costDirection), cD_comparator); // +9
 
     // itera por la selección de los elementos sorteados
-    for (int i = 0; i < sizeCounter; i++) {
+    // +1
+    for (int i = 0; i < sizeCounter; i++) { //+3
 
-        if (costList[i].dir.compare("y") == 0) {
+        if (costList[i].dir.compare("y") == 0) {    // +5
             // es un corte en Y
             // aumente por el costo multiplicado por las sub-divisiones en X
-            cost += (costList[i].cost * Cx);
-            Cy++;
+            cost += (costList[i].cost * Cx);    // +5
+            Cy++;   // +2
         }
         else {
             // es un corte en X
             // aumente por el costo multiplicado por las sub-divisiones en Y
-            cost += (costList[i].cost * Cy);
-            Cx++;
+            cost += (costList[i].cost * Cy);    // +5
+            Cx++;   // +2
         }
 
-    }
-
-    return cost;
+    }   // + (M+N)*15
+    return cost;    //+1
 }
-
-int costo2(int N, int M, int x[], int y[]) {
-
-}
+/*
+    *   f(n) = (M+N)*15 + (M-1)*8 + (N-1)*10
+    *   O(n) = O(M+N)
+    *   loop invariant: los ciclos para llenar costList
+*/
 
 void radixSort(int *arr, int n, int max) {
     int i, j, m, p = 1, index, temp, count = 0;
